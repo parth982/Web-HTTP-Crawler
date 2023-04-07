@@ -38,7 +38,30 @@ function getURLsFromHTML(htmlBody,baseURL){
     return urls;
 }
 
+// Function 3.0
+async function crawlPage(currrentURL){
+    console.log(`Actively Crawling ${currrentURL}\n\n`);
+    try{
+        const respon = await fetch(currrentURL);
+        if(respon.status > 399){
+            console.log(`Error in Fetch with the Status Code as: ${respon.status} \nOn Page ${currrentURL}\n`)
+            return;
+        }
+
+        const contentType = respon.headers.get('content-type');
+        console.log(contentType);
+        if(!contentType.includes('text/html')){
+            console.log(`Non HTML Response, Content Type: ${contentType} \nOn Page ${currrentURL}\n`)
+            return;
+        }
+        console.log(await respon.text());
+    }catch(err){
+        console.log(`\n\nError in Fetch : ${err.message} \nOn Page ${currrentURL}`);
+    }
+}
+
 module.exports = {
     normalizeURL,
-    getURLsFromHTML
+    getURLsFromHTML,
+    crawlPage
 };
