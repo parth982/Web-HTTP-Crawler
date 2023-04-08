@@ -39,25 +39,44 @@ function getURLsFromHTML(htmlBody,baseURL){
 }
 
 // Function 3.0
-async function crawlPage(currrentURL){
-    console.log(`Actively Crawling ${currrentURL}\n\n`);
+async function crawlPage(baseURL,currrentURL,pages){
+    
+    const baseURLObj = new URL(baseURL);
+    const currrentURLObj = new URL(currrentURL);
+
+    if(baseURLObj.hostname!==currrentURLObj.hostname){return pages;}
+
+    const normalizedCurrentURL = normalizeURL(currrentURL);
+    if(pages[normalizedCurrentURL]>0){
+        pages[normalizedCurrentURL]++;
+        return pages;
+    }
+    pages[normalizedCurrentURL]=1;
+
+    console.log(`Actively Crawling :${currrentURL}`);
+
     try{
         const respon = await fetch(currrentURL);
         if(respon.status > 399){
-            console.log(`Error in Fetch with the Status Code as: ${respon.status} \nOn Page ${currrentURL}\n`)
-            return;
+            console.log(`Error in Fetch with the Status Code as: ${respon.status} ,On Page ${currrentURL}\n`)
+            return pages;
         }
 
         const contentType = respon.headers.get('content-type');
-        console.log(contentType);
         if(!contentType.includes('text/html')){
-            console.log(`Non HTML Response, Content Type: ${contentType} \nOn Page ${currrentURL}\n`)
-            return;
+            console.log(`{{{Non HTML Response, Content Type: ${contentType} ,On Page ${currrentURL}}}}`)
+            return pages;
         }
-        console.log(await respon.text());
+
+        const htmlBody = await respon.text();
+        const nextURLS = getURLsFromHTML(htmlBody,baseURL);
+        for(const nextURL of nextURLS){
+            pages = await crawlPage(baseURL,nextURL,pages) ;
+        }
     }catch(err){
-        console.log(`\n\nError in Fetch : ${err.message} \nOn Page ${currrentURL}`);
+        console.log(`\nError in Fetch : ${err.message} ,On Page ${currrentURL}`);
     }
+    return pages;
 }
 
 module.exports = {
