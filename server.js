@@ -1,4 +1,5 @@
 const {crawlPage} = require('./crawl');
+const {printReport} = require('./report.js');
 
 async function main(){
     if(process.argv.length<3){
@@ -14,8 +15,7 @@ async function main(){
     console.log(`Started Crawling of ${baseURL}\n`);
 
     const pages = await crawlPage(baseURL,baseURL,{});
-    for(const page of Object.entries(pages)){
-        console.log(page);
-    }
+    // Print the Websote Crawled Report
+    printReport(pages);
 }
 main();
